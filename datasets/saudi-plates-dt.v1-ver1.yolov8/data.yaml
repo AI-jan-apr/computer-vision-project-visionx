@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['license_plate']
+
+roboflow:
+  workspace: majids-workspace-mwwjt
+  project: saudi-plates-dt-uyuvi
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/majids-workspace-mwwjt/saudi-plates-dt-uyuvi/dataset/1
