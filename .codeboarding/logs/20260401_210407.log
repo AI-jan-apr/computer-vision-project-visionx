@@ -1,4 +1,0 @@
-2026-04-01 21:04:07 WARNING  [static_analyzer:31] Unsupported programming language: YAML. Skipping.
-2026-04-01 21:04:07 INFO     [codeboarding_pro.session:108] Session 88d35c14-e9b0-43e3-834b-5b1091e82c46 initialized: repo=/Users/moojalgoot/Desktop/computer-vision-project-visionx, project=computer-vision-project-visionx, output=/Users/moojalgoot/Desktop/computer-vision-project-visionx/.codeboarding
-2026-04-01 21:09:07 INFO     [codeboarding_pro.ws.server:155] WebSocket disconnected: session 88d35c14-e9b0-43e3-834b-5b1091e82c46
-2026-04-01 21:09:07 INFO     [codeboarding_pro.session:397] Session 88d35c14-e9b0-43e3-834b-5b1091e82c46 destroyed
