@@ -1,6 +1,0 @@
-names:
-- car
-nc: 1
-path: /content/datasets/bdd100k
-train: images/train
-val: images/val
