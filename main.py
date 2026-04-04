@@ -6,6 +6,7 @@ from utils.plate_reader_cola import read_plate
 import cv2
 import os
 
+
 def main():
     image_path = "test_images/WhatsApp Image 2026-04-04 at 22.44.38.jpeg"
     os.makedirs("outputs", exist_ok=True)
