@@ -1,0 +1,31 @@
+# Web UI
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.9
+
+# VisionX pipeline (YOLO + OpenCV)
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# Vehicle color (utils/color_predictor.py — يُستورد من main.py عند تشغيل الويب/CLI)
+tensorflow>=2.15.0
+
+# Qwen2.5-VL plate reader (ثقيل؛ عطّل القراءة بـ skip_qwen إن لم تُحتج)
+torch>=2.1.0
+transformers>=4.46.0
+accelerate>=0.33.0
+safetensors>=0.4.0
+Pillow>=10.0.0
+
+# DB / Excel (db_cli import-excel، المقارنة مع SQLite)
+openpyxl>=3.1.0
+
+# notebooks/05_testing.ipynb
+matplotlib>=3.8.0
+pandas>=2.0.0
+ipykernel>=6.0.0
+
+# غير مدرج هنا (اختياري / صعب على ويندوز):
+#   flash-attn — لتسريب Qwen عند VISIONX_QWEN_FLASH_ATTN2=1 (CUDA + بناء من المصدر غالباً)
+#   huggingface_hub يُثبَّت تلقائياً مع transformers؛ HF_TOKEN اختياري لرفع حدود التحميل

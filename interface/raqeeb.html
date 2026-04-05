@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>رقيب — نظام التحقق الذكي من المركبات</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- تحميل الخطوط بدون حجب رسم الصفحة (إن تعطّل Google تظهر الواجهة فوراً بخطوط النظام) -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet"></noscript>
 <style>
   :root {
     --navy:       #060d1f;
@@ -603,9 +606,21 @@
     .stat-sep { display: none; }
   }
 
-  /* smooth reveal */
+  /* API / تحقق حي */
+  .status-wait {
+    background: rgba(122,146,181,.12);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .btn-primary:disabled { opacity: 0.55; cursor: wait; }
+  .dropzone.is-dragover { border-color: var(--accent); background: rgba(0,200,255,.12); }
+
+  /* smooth reveal — بدون .visible تبقى الشفافية 0 فتختفي الأسماء */
   .reveal { opacity: 0; transform: translateY(28px); transition: opacity .65s ease, transform .65s ease; }
   .reveal.visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
 </style>
 </head>
 <body>
@@ -716,7 +731,7 @@
             <div class="feat-icon">📸</div>
             <div class="feat-txt">
               <h4>قراءة اللوحات تلقائيًا</h4>
-              <p>استخراج أرقام اللوحات بتقنية OCR المخصصة للعربية والأرقام.</p>
+              <p>استخراج أرقام اللوحات بتقنية QWEN المخصصة للعربية والأرقام.</p>
             </div>
           </div>
           <div class="about-feat">
@@ -754,14 +769,14 @@
         <span class="step-emoji">🔢</span>
         <h3>قراءة اللوحة</h3>
         <p>استخراج لوحة المركبة من الصورة وتطبيق خوارزميات OCR لقراءة الأرقام والحروف.</p>
-        <span class="step-tech">OCR · Tesseract</span>
+        <span class="step-tech">QWEN</span>
       </div>
       <div class="step-card reveal">
         <div class="step-num">03</div>
         <span class="step-emoji">🎨</span>
         <h3>تحليل الخصائص</h3>
         <p>تصنيف لون المركبة ونوعها والشركة المصنعة باستخدام نماذج تصنيف متخصصة.</p>
-        <span class="step-tech">ResNet · CNN</span>
+        <span class="step-tech"></span>
       </div>
       <div class="step-card reveal">
         <div class="step-num">04</div>
@@ -794,73 +809,102 @@
       <!-- upload side -->
       <div class="upload-card reveal">
         <h3>📤 رفع <span>ملف للفحص</span></h3>
-        <div class="dropzone">
+        <input type="file" id="raqeeb-file-input" accept="image/jpeg,image/png,image/webp" hidden />
+        <div class="dropzone" id="raqeeb-dropzone" role="button" tabindex="0">
           <div class="dropzone-icon">☁️</div>
           <p><strong>اسحب الملف هنا</strong></p>
-          <p>أو انقر للاختيار · PNG, JPG, MP4</p>
+          <p>أو انقر للاختيار · PNG, JPG, WebP</p>
+          <p id="raqeeb-filename" style="margin-top:10px;font-size:.8rem;color:var(--accent);min-height:1.3em;"></p>
         </div>
         <div class="upload-btns">
-          <button class="upload-btn active" onclick="setActive(this)">🖼️ صورة</button>
-          <button class="upload-btn" onclick="setActive(this)">🎥 فيديو</button>
+          <button type="button" class="upload-btn active" id="raqeeb-mode-image" data-mode="image">🖼️ صورة</button>
+          <button type="button" class="upload-btn" id="raqeeb-mode-video" data-mode="video" title="الفيديو غير مفعّل في النسخة الحالية">🎥 فيديو</button>
+        </div>
+        <div style="margin-top:14px;font-size:.78rem;color:var(--muted);">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="raqeeb-skip-qwen" />
+            تخطي قراءة اللوحة بـ <strong style="color:var(--accent)">Qwen 2.5-VL</strong> (للتجربة السريعة فقط — بدونها لا يُستخرج نص اللوحة ولا تُستدعى قاعدة البيانات بالرقم)
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:6px;cursor:pointer;">
+            <input type="checkbox" id="raqeeb-compare-db" checked /> مقارنة مع قاعدة البيانات
+          </label>
         </div>
         <div style="margin-top:20px;">
-          <button class="btn-primary" style="width:100%;justify-content:center;">
+          <button type="button" class="btn-primary" id="raqeeb-btn-verify" style="width:100%;justify-content:center;">
             🔍 بدء التحقق
           </button>
         </div>
-        <p style="font-size:.78rem;color:var(--muted);margin-top:12px;text-align:center;">الملفات المدعومة: JPG، PNG، MP4 · حد 50 MB</p>
+        <p id="raqeeb-demo-error" style="display:none;margin-top:12px;font-size:.8rem;color:var(--red);text-align:center;"></p>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:12px;text-align:center;">الملفات: JPG، PNG، WebP · القراءة الافتراضية: Qwen 2.5-VL (أول تشغيل قد يحمّل الموديل من Hugging Face ويستغرق وقتاً)</p>
       </div>
 
       <!-- result side -->
       <div class="result-card reveal">
         <div class="result-header">
           <h3>📊 نتيجة <span style="color:var(--accent)">التحقق</span></h3>
-          <span class="status-badge status-match">✅ مطابقة</span>
+          <span class="status-badge status-wait" id="raqeeb-status-badge">في انتظار الفحص</span>
         </div>
         <div class="result-body">
           <div class="result-grid">
             <div class="r-field">
               <label>رقم اللوحة</label>
-              <div class="val plate">أ ب ج · 1234</div>
+              <div class="val plate" id="raqeeb-r-plate">—</div>
             </div>
             <div class="r-field">
               <label>لون المركبة</label>
-              <div class="val">⚪ أبيض</div>
+              <div class="val" id="raqeeb-r-color">—</div>
             </div>
             <div class="r-field">
-              <label>نوع المركبة</label>
-              <div class="val">🚗 سيدان</div>
+              <label>نوع / موديل</label>
+              <div class="val" id="raqeeb-r-model">—</div>
             </div>
             <div class="r-field">
               <label>الشركة المصنعة</label>
-              <div class="val">🏭 Toyota</div>
+              <div class="val" id="raqeeb-r-brand">—</div>
             </div>
             <div class="r-field">
               <label>حالة التحقق</label>
-              <div class="val match">✅ مطابقة تامة</div>
+              <div class="val" id="raqeeb-r-verify">—</div>
             </div>
             <div class="r-field">
               <label>وقت الفحص</label>
-              <div class="val">⚡ 1.3 ثانية</div>
+              <div class="val" id="raqeeb-r-time">—</div>
             </div>
           </div>
           <div class="conf-row">
             <label>
-              نسبة التطابق
-              <span>97.4%</span>
+              نسبة الثقة (تقديرية)
+              <span id="raqeeb-conf-pct">—</span>
             </label>
             <div class="conf-bar">
-              <div class="conf-fill" style="width:97.4%"></div>
+              <div class="conf-fill" id="raqeeb-conf-fill" style="width:0%"></div>
             </div>
           </div>
-          <!-- suspicious example -->
-          <div style="margin-top:24px;padding:16px;background:rgba(255,60,90,.06);border:1px solid rgba(255,60,90,.25);border-radius:var(--radius-sm);">
+          <div id="raqeeb-overview-wrap" style="margin-top:20px;display:none;">
+            <label style="font-size:.72rem;color:var(--muted);margin-bottom:6px;display:block;">معاينة الكشف</label>
+            <img id="raqeeb-overview-img" alt="overview" class="result-img" style="width:100%;border-radius:var(--radius-sm);border:1px solid var(--border);" />
+          </div>
+          <p id="raqeeb-api-messages" style="margin-top:16px;font-size:.8rem;color:var(--muted);line-height:1.6;"></p>
+          <!-- تنبيه حي من السيرفر -->
+          <div id="raqeeb-live-alert" style="display:none;margin-top:20px;padding:16px;background:rgba(255,60,90,.06);border:1px solid rgba(255,60,90,.25);border-radius:var(--radius-sm);">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
               <span>⚠️</span>
-              <strong style="font-size:.9rem;">مثال — مركبة مشبوهة</strong>
-              <span class="status-badge status-sus" style="margin-right:auto;">🚨 مشبوهة</span>
+              <strong style="font-size:.9rem;">تنبيه — عدم تطابق مع السجل</strong>
+              <span class="status-badge status-sus" style="margin-right:auto;">🚨 راجع البيانات</span>
             </div>
-            <p style="font-size:.8rem;color:var(--muted);">اختلاف في لون المركبة الفعلي عن السجل الرسمي — تحقق يدوي مطلوب.</p>
+            <p id="raqeeb-live-alert-text" style="font-size:.8rem;color:var(--muted);"></p>
+          </div>
+          <!-- مثال توضيحي (ثابت كما في التصميم الأصلي) -->
+          <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
+            <p style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">مثال توضيحي للواجهة</p>
+            <div style="padding:16px;background:rgba(255,60,90,.06);border:1px solid rgba(255,60,90,.25);border-radius:var(--radius-sm);">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <span>⚠️</span>
+                <strong style="font-size:.9rem;">مثال — مركبة مشبوهة</strong>
+                <span class="status-badge status-sus" style="margin-right:auto;">🚨 مشبوهة</span>
+              </div>
+              <p style="font-size:.8rem;color:var(--muted);">اختلاف في لون المركبة الفعلي عن السجل الرسمي — تحقق يدوي مطلوب.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -880,33 +924,19 @@
     <div class="team-grid">
       <div class="team-card reveal">
         <div class="avatar">👨‍💻</div>
-        <h4>محمد العنزي</h4>
-        <div class="team-role">قائد المشروع · AI Engineer</div>
-        <p class="team-desc">مختص في تطوير نماذج الكشف والرؤية الحاسوبية، يقود الرؤية التقنية للمشروع.</p>
+        <h4>ماجد النودلي</h4>
       </div>
       <div class="team-card reveal">
         <div class="avatar">👩‍💻</div>
-        <h4>سارة الشمري</h4>
-        <div class="team-role">مطورة النماذج · ML Developer</div>
-        <p class="team-desc">تتخصص في بناء وتدريب نماذج التصنيف والتحقق من الخصائص.</p>
+        <h4>موج ال قوت</h4>
       </div>
       <div class="team-card reveal">
         <div class="avatar">👨‍🔬</div>
-        <h4>عمر القحطاني</h4>
-        <div class="team-role">هندسة البيانات · Data Engineer</div>
-        <p class="team-desc">مسؤول عن بناء قاعدة البيانات ومنظومة المقارنة والتحقق من السجلات.</p>
+        <h4>عبد الرحمن المطيري</h4>
       </div>
       <div class="team-card reveal">
         <div class="avatar">👩‍🎨</div>
-        <h4>نورة الدوسري</h4>
-        <div class="team-role">مصممة الواجهات · UI/UX</div>
-        <p class="team-desc">صممت تجربة المستخدم لتكون واضحة وسلسة وتعكس هوية المشروع.</p>
-      </div>
-      <div class="team-card reveal">
-        <div class="avatar">👨‍🏫</div>
-        <h4>د. خالد الزهراني</h4>
-        <div class="team-role">المشرف الأكاديمي · Supervisor</div>
-        <p class="team-desc">أستاذ في قسم الذكاء الاصطناعي، يُشرف ويوجّه الفريق نحو الأهداف البحثية.</p>
+        <h4>لمى الدهام</h4>
       </div>
     </div>
   </div>
@@ -1001,7 +1031,17 @@
 </footer>
 
 <script>
-  // Scroll reveal
+  // Scroll reveal — إظهار فوري لما يكون القسم أصلاً داخل الشاشة (مثل #team بعد النقر من القائمة)
+  function markRevealIfInView() {
+    const vh = window.innerHeight || document.documentElement.clientHeight || 1;
+    document.querySelectorAll('.reveal:not(.visible)').forEach((el, i) => {
+      const r = el.getBoundingClientRect();
+      if (r.bottom > -60 && r.top < vh + 80) {
+        setTimeout(() => el.classList.add('visible'), Math.min(i, 12) * 45);
+      }
+    });
+  }
+
   const reveals = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((e, i) => {
@@ -1010,14 +1050,161 @@
         observer.unobserve(e.target);
       }
     });
-  }, { threshold: 0.12 });
-  reveals.forEach(el => observer.observe(el));
+  }, { threshold: 0.05, rootMargin: '0px 0px 18% 0px' });
+  reveals.forEach((el) => observer.observe(el));
 
-  // Upload toggle
-  function setActive(btn) {
+  requestAnimationFrame(() => requestAnimationFrame(markRevealIfInView));
+  window.addEventListener('load', markRevealIfInView);
+  window.addEventListener('resize', markRevealIfInView);
+  setTimeout(markRevealIfInView, 350);
+  window.addEventListener('hashchange', () => setTimeout(markRevealIfInView, 100));
+  if (location.hash) setTimeout(markRevealIfInView, 200);
+
+  // وضع صورة / فيديو (الفيديو غير مفعّل بعد)
+  let raqeebMode = 'image';
+  let raqeebFile = null;
+
+  function setUploadMode(mode, btn) {
+    raqeebMode = mode;
     document.querySelectorAll('.upload-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (mode === 'video') {
+      alert('معالجة الفيديو غير مفعّلة في هذه النسخة. اختر «صورة».');
+      document.getElementById('raqeeb-mode-image').classList.add('active');
+      document.getElementById('raqeeb-mode-video').classList.remove('active');
+      raqeebMode = 'image';
+    }
   }
+  document.getElementById('raqeeb-mode-image').addEventListener('click', function () {
+    setUploadMode('image', this);
+  });
+  document.getElementById('raqeeb-mode-video').addEventListener('click', function () {
+    setUploadMode('video', this);
+  });
+
+  const dz = document.getElementById('raqeeb-dropzone');
+  const fin = document.getElementById('raqeeb-file-input');
+  const fnEl = document.getElementById('raqeeb-filename');
+  dz.addEventListener('click', () => fin.click());
+  dz.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fin.click(); } });
+  fin.addEventListener('change', () => {
+    const f = fin.files[0];
+    if (f) { raqeebFile = f; fnEl.textContent = f.name; }
+  });
+  ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('is-dragover'); }));
+  ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('is-dragover'); }));
+  dz.addEventListener('drop', (e) => {
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) { raqeebFile = f; fnEl.textContent = f.name; fin.value = ''; }
+  });
+
+  function pctFromConf(summary) {
+    const parts = [];
+    if (summary.vehicle && summary.vehicle.confidence != null) parts.push(summary.vehicle.confidence);
+    if (summary.plate && summary.plate.confidence != null) parts.push(summary.plate.confidence);
+    const bm = summary.brand_model || {};
+    if (bm.confidence != null) parts.push(bm.confidence);
+    const vc = summary.vehicle_color || {};
+    if (vc.color_conf != null) parts.push(vc.color_conf);
+    if (!parts.length) return 0;
+    return Math.round(100 * parts.reduce((a,b) => a+b, 0) / parts.length);
+  }
+
+  document.getElementById('raqeeb-btn-verify').addEventListener('click', async function () {
+    const errEl = document.getElementById('raqeeb-demo-error');
+    errEl.style.display = 'none';
+    errEl.textContent = '';
+    if (raqeebMode !== 'image') { errEl.textContent = 'اختر وضع الصورة.'; errEl.style.display = 'block'; return; }
+    if (!raqeebFile) { errEl.textContent = 'اختر ملف صورة أولاً.'; errEl.style.display = 'block'; return; }
+
+    const btn = this;
+    btn.disabled = true;
+
+    const badge = document.getElementById('raqeeb-status-badge');
+    badge.className = 'status-badge status-wait';
+    badge.textContent = '⏳ جاري الفحص…';
+
+    const fd = new FormData();
+    fd.append('file', raqeebFile);
+    const q = new URLSearchParams({
+      skip_qwen: document.getElementById('raqeeb-skip-qwen').checked,
+      skip_brand: 'false',
+      skip_color: 'false',
+      compare_db: document.getElementById('raqeeb-compare-db').checked,
+    });
+
+    try {
+      const res = await fetch('/api/analyze?' + q.toString(), { method: 'POST', body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        let msg = res.statusText;
+        const d = data.detail;
+        if (typeof d === 'string') msg = d;
+        else if (Array.isArray(d)) msg = d.map(x => x.msg || JSON.stringify(x)).join('; ');
+        throw new Error(msg);
+      }
+
+      const s = data.summary || {};
+      const pr = s.plate_read || {};
+      const bm = s.brand_model || {};
+      const vc = s.vehicle_color || {};
+      const comp = data.db_comparison;
+
+      document.getElementById('raqeeb-r-plate').textContent = pr.final || '—';
+      document.getElementById('raqeeb-r-color').textContent = vc.color ? ('🎨 ' + vc.color) : '—';
+      document.getElementById('raqeeb-r-model').textContent = bm.model || '—';
+      document.getElementById('raqeeb-r-brand').textContent = bm.brand ? ('🏭 ' + bm.brand) : '—';
+
+      const sec = (data.elapsed_ms / 1000).toFixed(1);
+      document.getElementById('raqeeb-r-time').textContent = '⚡ ' + sec + ' ثانية';
+
+      const p = pctFromConf(s);
+      document.getElementById('raqeeb-conf-pct').textContent = p ? (p + '%') : '—';
+      document.getElementById('raqeeb-conf-fill').style.width = (p || 0) + '%';
+
+      const verifyEl = document.getElementById('raqeeb-r-verify');
+      const liveAlert = document.getElementById('raqeeb-live-alert');
+      const liveText = document.getElementById('raqeeb-live-alert-text');
+      liveAlert.style.display = 'none';
+
+      if (comp == null) {
+        badge.className = 'status-badge status-wait';
+        badge.textContent = 'ℹ️ بلا سجل';
+        verifyEl.className = 'val';
+        verifyEl.textContent = 'لا يوجد مطابقة في قاعدة البيانات';
+      } else if (comp.registry_consistent) {
+        badge.className = 'status-badge status-match';
+        badge.textContent = '✅ مطابقة';
+        verifyEl.className = 'val match';
+        verifyEl.textContent = '✅ مطابقة مع السجل';
+      } else {
+        badge.className = 'status-badge status-sus';
+        badge.textContent = '🚨 اختلاف';
+        verifyEl.className = 'val sus';
+        verifyEl.textContent = '⚠️ لا تطابق السجل';
+        liveAlert.style.display = 'block';
+        const fields = (comp.mismatch_fields || []).join('، ');
+        liveText.textContent = fields ? ('الحقول: ' + fields) : 'راجع التفاصيل أعلاه.';
+      }
+
+      const msgBox = document.getElementById('raqeeb-api-messages');
+      msgBox.innerHTML = (data.messages || []).map(m => '• ' + m.text).join('<br/>');
+
+      const ov = (data.images || {})['00_overview.jpg'];
+      const wrap = document.getElementById('raqeeb-overview-wrap');
+      const img = document.getElementById('raqeeb-overview-img');
+      if (ov) { img.src = ov + '?t=' + Date.now(); wrap.style.display = 'block'; }
+      else { wrap.style.display = 'none'; }
+
+    } catch (e) {
+      errEl.textContent = e.message || String(e);
+      errEl.style.display = 'block';
+      badge.className = 'status-badge status-sus';
+      badge.textContent = 'خطأ';
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   // Sticky nav highlight
   const sections = document.querySelectorAll('section[id]');

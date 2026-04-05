@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VisionX — تحليل صورة مركبة</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>VisionX</h1>
+      <p>ارفع صورة سيارة: كشف المركبة واللوحة، تقدير الماركة واللون، قراءة اللوحة، ومقارنة مع قاعدة البيانات.</p>
+    </header>
+    <main>
+      <div id="error-banner" class="error-banner"></div>
+
+      <section class="card">
+        <h2>رفع الصورة</h2>
+        <div id="drop-zone" class="drop-zone">
+          <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp" />
+          <p>اسحب الصورة هنا أو انقر للاختيار (JPG / PNG / WebP)</p>
+        </div>
+        <div class="options">
+          <label
+            ><input type="checkbox" id="opt-skip-qwen" /> تخطي قراءة اللوحة بـ Qwen (افتراضياً: يعمل Qwen للمطابقة مع DB)</label
+          >
+          <label><input type="checkbox" id="opt-skip-brand" /> تخطي تقدير الماركة/الموديل</label>
+          <label><input type="checkbox" id="opt-skip-color" /> تخطي تقدير اللون</label>
+          <label><input type="checkbox" id="opt-compare-db" checked /> مقارنة مع قاعدة البيانات</label>
+        </div>
+        <button type="button" id="btn-analyze" class="primary">تحليل</button>
+        <div id="loader" class="loader">جاري التحليل… قد يستغرق وقتاً عند تشغيل كل الموديلات.</div>
+      </section>
+
+      <section id="results" class="card" hidden>
+        <h2>النتيجة</h2>
+        <div id="messages" class="messages"></div>
+        <div class="grid-2" style="margin-top: 1rem">
+          <div id="details"></div>
+          <div id="images"></div>
+        </div>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

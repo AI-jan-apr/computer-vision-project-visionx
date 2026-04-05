@@ -1,0 +1,13 @@
+# Local DB (regenerate with db_cli.py init)
+data/*.db
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Outputs
+outputs/

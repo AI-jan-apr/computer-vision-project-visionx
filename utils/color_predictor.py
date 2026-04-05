@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-MODEL_PATH = "models/car_color_model_augmented.keras"
+from utils.config import COLOR_MODEL_PATH
 
 # عدلي ترتيب الألوان إذا كان عندك ترتيب مختلف وقت التدريب
 CLASS_NAMES =['black', 'blue', 'red', 'white', 'silver', 'grey']
@@ -16,7 +16,12 @@ _color_model = None
 def load_color_model():
     global _color_model
     if _color_model is None:
-        _color_model = tf.keras.models.load_model(MODEL_PATH)
+        if not COLOR_MODEL_PATH.is_file():
+            raise FileNotFoundError(
+                f"Color model not found: {COLOR_MODEL_PATH}. "
+                "Set VISIONX_COLOR_MODEL or add car_color_model_augmented.keras under models/."
+            )
+        _color_model = tf.keras.models.load_model(str(COLOR_MODEL_PATH))
     return _color_model
 
 
