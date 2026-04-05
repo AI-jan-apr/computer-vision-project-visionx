@@ -1,70 +1,195 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/nSn4fJNC)
-# Computer Vision Project
 
-## 📌 Project Overview
-In this project, you are required to build a Computer Vision application using the concepts covered in the course.
+# Raqeeb — Stolen License Plate Detection & Vehicle Verification System
 
-The project should demonstrate a clear understanding of image processing, feature extraction, or deep learning techniques (e.g., OpenCV, CNNs, etc.).
+##  Project Overview
 
----
+**Raqeeb (رقيب)** is an intelligent Computer Vision system designed to detect stolen license plates and verify whether a plate belongs to the correct vehicle.
 
-## 👥 Team Information
-Each team must clearly list all members and their contributions.
+The system analyzes an input image, detects the vehicle, extracts and reads the license plate using a Vision-Language Model, predicts the car brand and model, and compares the results with a database.
 
-| Name | Role | Contribution |
-|------|------|-------------|
-| Member 1 | Example: Team Leader | Managed the project and coordination |
-| Member 2 | Example: Data Engineer | Data collection and preprocessing |
-| Member 3 | Example: ML Engineer | Model building and training |
-| Member 4 | Example: Developer | Implementation and testing |
-
-⚠️ Each member must have a **clear and specific responsibility**.
+This project goes beyond traditional plate recognition by adding a **smart verification layer** to detect suspicious or mismatched vehicles.
 
 ---
 
 ## 🎯 Project Objectives
-- Define the problem you are solving  
-- Explain why this problem is important  
-- Describe the expected outcome  
 
----
+* Detect vehicles from images
+* Extract and read license plates
+* Predict vehicle brand and model
+* Compare results with a database
+* Detect stolen plates
+* Detect mismatched vehicles (fake plate usage)
 
-## 📂 Dataset
-- Describe the dataset used  
-- Source of the data (Kaggle, custom, etc.)  
-- Number of samples  
-- Any preprocessing steps applied  
+This system is important for:
+
+* Traffic security 
+* Law enforcement 
+* Smart city systems 
+* Preventing fraud and illegal vehicle usage 
 
 ---
 
 ## 🧠 Methodology
-Explain your approach step by step:
 
-- Data preprocessing  
-- Model selection (e.g., CNN, OpenCV techniques)  
-- Training process  
-- Evaluation method  
+The system follows a complete pipeline:
+
+1. **Vehicle Detection**
+   Detect the vehicle using a deep learning model (YOLO)
+
+2. **Vehicle Cropping**
+   Extract the vehicle region from the image
+
+3. **Vehicle Analysis (Brand & Model Prediction)**
+   Predict:
+
+   * Car brand
+   * Car model
+
+4. **Plate Detection**
+   Detect the license plate area
+
+5. **Plate Enhancement**
+   Improve image quality
+
+6. **Plate Reading using Vision-Language Model**
+   The system uses Qwen to extract the license plate number instead of traditional OCR.
+
+7. **Database Matching**
+   Retrieve stored data using the plate number:
+
+   * Expected brand
+   * Expected model
+   * Stolen status
+
+8. **Smart Verification (Core Innovation)**
+   The system compares:
+
+   * Detected vehicle
+   * Database record
+
+   Then decides:
+
+   * **Stolen Plate** → if plate is flagged
+   * **Valid Vehicle** → if everything matches
+
+---
+
+## 📂 Dataset
+
+The project uses:
+
+* Public vehicle image datasets
+* Custom test images
+* Simulated database of license plates
+
+### Preprocessing
+
+* Image resizing
+* Object cropping
+* Plate enhancement for better recognition
 
 ---
 
 ## ⚙️ Implementation
-- Tools and libraries used (e.g., OpenCV, TensorFlow, PyTorch)  
-- Key steps in your implementation  
-- Any challenges faced and how you solved them  
+
+### Tools & Technologies
+
+* Python
+* OpenCV
+* YOLO (Object Detection)
+* Vehicle Classification Model (Brand / Model)
+* Qwen (Plate Reading)
+*  Database
+
+### Key Features
+
+* End-to-end AI pipeline
+* Plate recognition using Vision-Language Model
+* Vehicle brand/model prediction
+* Smart verification system
+
+---
+
+## 🧠 Key Innovation
+
+Unlike traditional systems, **Raqeeb** does not only read license plates.
+
+It verifies whether the plate actually belongs to the detected vehicle by comparing it with stored data.
+
+This enables detection of:
+
+* Fake plates
+* Plate swapping
+* Suspicious vehicles
 
 ---
 
 ## 📊 Results
-- Show your results (accuracy, loss, etc.)  
-- Include visual outputs if applicable  
-- Explain whether the model performed well or not  
+
+The system successfully:
+
+* Detects vehicles in images
+* Reads license plates using Qwen
+* Predicts vehicle brand and model
+* Detects mismatches and stolen plates
+
+### Example Output
+
+Plate Number: XYZ1234
+Detected Car: Toyota Camry
+Database Record: Hyundai Elantra
+
+Status: ⚠️ MISMATCH DETECTED
 
 ---
 
 ## 🚀 How to Run the Project
-Provide clear instructions:
 
 ```bash
-# Example
 pip install -r requirements.txt
 python main.py
+```
+
+---
+
+## 📁 Project Structure
+
+```bash
+project/
+│── data/
+│── models/
+│── utils/
+│── test_images/
+│── outputs/
+│── main.py
+│── requirements.txt
+│── README.md
+```
+
+---
+
+## 👥 Team Members
+
+* Abdulrahman Almutairi
+* Mooj Algoot
+* Majid Alnodali
+* Lama Aldaham
+
+---
+
+## 🔮 Future Improvements
+
+* Real-time camera integration
+* Connection to official government databases
+* Improved vehicle model accuracy
+* Confidence scoring system
+
+
+---
+
+## ✅ Conclusion
+
+**Raqeeb** is a smart AI-powered system that combines Computer Vision and deep learning to detect stolen license plates and verify vehicle identity.
+
+It provides a practical and scalable solution for enhancing road security and detecting fraudulent vehicle activity.
